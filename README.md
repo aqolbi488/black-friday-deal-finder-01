@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/black-friday-deal-finder-01/aqolbi488/black-friday-deal-finder-01/rank.svg)](https://make.fun/bounty/black-friday-deal-finder-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
 [![reward](https://make.fun/badge/black-friday-deal-finder-01/aqolbi488/black-friday-deal-finder-01/reward.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
 
-Bargain Verdict: a Black Friday deal finder whose prices were checked on Black Friday morning, with an honest verdict on every discount — new low, strong price, routine sale, or inflated was-price — plus search and filters by category, store and discount, best deals first, and the same product compared across stores. Static site under app/ (no build step, no network loads); main.ts hands it in with the vendored make.fun dossier library.
+Deal Radar: a Black Friday deal finder that scores every deal 0–100 (discount % + honest verdict bonus + dollars saved) and puts the strongest first — prices checked on Black Friday evening, 27 November 2026, each with a verdict (new low, strong price, routine sale, inflated was-price), search and filters by category, store, discount and score, and the same product compared across stores in a dedicated table view. Static site under app/ (no build step, no network loads); main.ts hands it in with the vendored make.fun dossier library.
 
 ## Run it
 

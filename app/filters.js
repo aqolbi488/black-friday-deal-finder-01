@@ -1,22 +1,7 @@
-// Filtering, sorting and scoring for the deal board. Pure functions over the deal list — no DOM here,
-// so the board's behaviour can be reasoned about (and tested) without a browser.
+// Filtering and sorting for the Radar board. Pure functions over the deal list —
+// no DOM here, so the board's behaviour can be reasoned about without a browser.
 
-export const percentOff = (d) => Math.round((1 - d.price / d.was) * 100);
-
-// A simple, explainable score: the discount counts, and the honest signal adjusts it.
-// A new low is worth more than the same % off a price that comes back every year.
-const signalBonus = { "new-low": 25, strong: 12, routine: 0, inflated: -15 };
-
-export function dealScore(d) {
-  return percentOff(d) + (signalBonus[d.signal] ?? 0);
-}
-
-export const signalLabel = {
-  "new-low": "New low",
-  strong: "Strong price",
-  routine: "Routine sale",
-  inflated: "Inflated was-price",
-};
+import { percentOff, savings, scoreOf } from "./score.js";
 
 export function categoriesOf(deals) {
   return [...new Set(deals.map((d) => d.category))].sort();
@@ -26,29 +11,53 @@ export function storesOf(deals) {
   return [...new Set(deals.map((d) => d.store))].sort();
 }
 
-// state: { query, category, store, minOff, sort }
+// state: { query, category, store, minOff, minScore, sort }
 export function applyFilters(deals, state) {
   const q = state.query.trim().toLowerCase();
   const shown = deals.filter((d) => {
     if (state.category !== "All" && d.category !== state.category) return false;
     if (state.store !== "All" && d.store !== state.store) return false;
     if (percentOff(d) < state.minOff) return false;
+    if (scoreOf(d) < state.minScore) return false;
     if (q !== "" && !`${d.title} ${d.store} ${d.category} ${d.product}`.toLowerCase().includes(q)) return false;
     return true;
   });
   const by = {
-    best: (a, b) => dealScore(b) - dealScore(a) || a.price - b.price,
-    discount: (a, b) => percentOff(b) - percentOff(a) || dealScore(b) - dealScore(a),
+    score: (a, b) => scoreOf(b) - scoreOf(a) || savings(b) - savings(a) || a.price - b.price,
+    discount: (a, b) => percentOff(b) - percentOff(a) || scoreOf(b) - scoreOf(a),
+    savings: (a, b) => savings(b) - savings(a) || scoreOf(b) - scoreOf(a),
     "price-asc": (a, b) => a.price - b.price,
     "price-desc": (a, b) => b.price - a.price,
-    savings: (a, b) => b.was - b.price - (a.was - a.price),
   };
-  return shown.sort(by[state.sort] ?? by.best);
+  return shown.sort(by[state.sort] ?? by.score);
 }
 
-// Other listings of the same product at different stores, cheapest first.
-export function sameProductElsewhere(deals, deal) {
-  return deals
-    .filter((d) => d.product === deal.product && d.id !== deal.id)
-    .sort((a, b) => a.price - b.price);
+// Every listing of one product across stores, cheapest first — the compare view's data.
+export function productGroup(deals, product) {
+  return deals.filter((d) => d.product === product).sort((a, b) => a.price - b.price || scoreOf(b) - scoreOf(a));
+}
+
+// Products sold by more than one store on this board, best (cheapest) listing first.
+export function comparableProducts(deals) {
+  const groups = new Map();
+  for (const d of deals) {
+    if (!groups.has(d.product)) groups.set(d.product, []);
+    groups.get(d.product).push(d);
+  }
+  return [...groups.entries()]
+    .filter(([, list]) => list.length > 1)
+    .map(([product, list]) => ({ product, list: list.sort((a, b) => a.price - b.price) }))
+    .sort((a, b) => a.list[0].price - b.list[0].price);
+}
+
+export function boardStats(deals) {
+  const scores = deals.map(scoreOf);
+  return {
+    count: deals.length,
+    stores: storesOf(deals).length,
+    categories: categoriesOf(deals).length,
+    topScore: Math.max(...scores),
+    totalSavings: deals.reduce((sum, d) => sum + savings(d), 0),
+    comparable: comparableProducts(deals).length,
+  };
 }

@@ -1,23 +1,25 @@
-// Bargain Verdict: a Black Friday deal board where every price was checked and every discount gets a verdict.
-// Hash routes: #/ is the board (search + filters), #/deal/<id> is one deal's page.
+// Deal Radar: a Black Friday deal board scored 0–100, best first.
+// Hash routes: #/ is the board (search + filters), #/deal/<id> is one deal's page,
+// #/compare is every same-product-across-stores table.
 // window.__shotReady tells a screenshot script when the page is fully rendered.
 
 import { deals } from "./data.js";
-import { applyFilters, categoriesOf, storesOf } from "./filters.js";
-import { board, dealPage, gridHtml, missingPage } from "./views.js";
+import { applyFilters, boardStats, categoriesOf, storesOf } from "./filters.js";
+import { board, comparePage, dealPage, gridHtml, missingPage } from "./views.js";
 
 const app = document.getElementById("app");
-const state = { query: "", category: "All", store: "All", minOff: 0, sort: "best" };
+const state = { query: "", category: "All", store: "All", minOff: 0, minScore: 0, sort: "score" };
+const stats = boardStats(deals);
 
 function refreshGrid() {
   const shown = applyFilters(deals, state);
   document.getElementById("grid").innerHTML = gridHtml(shown);
-  document.getElementById("count").textContent = `${shown.length} of ${deals.length} deals`;
+  document.getElementById("count").textContent = `${shown.length} of ${deals.length} deals on the radar`;
 }
 
 function renderBoard() {
-  document.title = "Bargain Verdict — Black Friday deals, checked";
-  app.innerHTML = board(deals, state, categoriesOf(deals), storesOf(deals));
+  document.title = "Deal Radar — Black Friday deals scored, best first";
+  app.innerHTML = board(deals, state, categoriesOf(deals), storesOf(deals), stats);
   refreshGrid();
   document.getElementById("q").addEventListener("input", (e) => {
     state.query = e.target.value;
@@ -25,6 +27,10 @@ function renderBoard() {
   });
   document.getElementById("minoff").addEventListener("change", (e) => {
     state.minOff = Number(e.target.value);
+    refreshGrid();
+  });
+  document.getElementById("minscore").addEventListener("change", (e) => {
+    state.minScore = Number(e.target.value);
     refreshGrid();
   });
   document.getElementById("sort").addEventListener("change", (e) => {
@@ -47,11 +53,14 @@ function renderBoard() {
 
 function render() {
   window.__shotReady = false;
-  const match = location.hash.match(/^#\/deal\/([^/?]+)/);
-  if (match) {
-    const found = deals.find((d) => d.id === decodeURIComponent(match[1]));
-    document.title = found ? `${found.title} | Bargain Verdict` : "Not found | Bargain Verdict";
+  const dealMatch = location.hash.match(/^#\/deal\/([^/?]+)/);
+  if (dealMatch) {
+    const found = deals.find((d) => d.id === decodeURIComponent(dealMatch[1]));
+    document.title = found ? `${found.title} | Deal Radar` : "Not found | Deal Radar";
     app.innerHTML = found ? dealPage(found, deals) : missingPage();
+  } else if (location.hash.startsWith("#/compare")) {
+    document.title = "Same product, every store | Deal Radar";
+    app.innerHTML = comparePage(deals);
   } else {
     renderBoard();
   }
