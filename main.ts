@@ -1,4 +1,5 @@
 // Entry point for the black-friday-deal-finder-01 hand-in (Node 22, standard library only).
+// Weekend re-check edition (28 Nov 2026): same hand-in contract, fresh prices in app/.
 // The site itself is the static app/ folder beside this file. This program copies app/ and
 // screenshots/ to the output directory (/output in the grader, MAKEFUN_OUTPUT_DIR locally) and
 // writes dossier.json there with the vendored buildDossier, using the scorer's own caps so the

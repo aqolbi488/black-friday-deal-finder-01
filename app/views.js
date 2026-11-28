@@ -1,14 +1,11 @@
 // HTML for the Radar board, the deal pages and the compare view.
 // Everything from the data file is escaped before it reaches the page.
+// Weekend re-check edition: a freshness banner leads the board, verdict chips join
+// the filters, and every card names the other stores selling the same product.
 
+import { checkedAt, checkedDay, esc, usd } from "./format.js";
 import { percentOff, savings, scoreOf, scoreParts, scoreWord, signalLabel } from "./score.js";
 import { comparableProducts, productGroup } from "./filters.js";
-
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-const usd = (n) =>
-  "$" + n.toLocaleString("en-US", { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
-const checkedAt = (iso) =>
-  new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) + " UTC";
 
 export function signalBadge(d) {
   return `<span class="badge badge-${esc(d.signal)}">${esc(signalLabel[d.signal] ?? d.signal)}</span>`;
@@ -22,7 +19,16 @@ export function scoreRing(d) {
   return `<span class="ring" title="Deal Score ${s} of 100 — ${esc(scoreParts(d))}"><svg viewBox="0 0 36 36" width="44" height="44" aria-hidden="true"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--track)" stroke-width="4"/><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--lime)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${filled.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 18 18)"/></svg><span class="ring-num">${s}</span></span>`;
 }
 
-export function dealCard(d, rank) {
+// One line naming the other stores for the same product, cheapest first.
+export function alsoAt(d, all) {
+  const others = productGroup(all, d.product).filter((o) => o.id !== d.id);
+  if (others.length === 0) return "";
+  const names = others.map((o) => `${esc(o.store)} ${usd(o.price)}`).join(" · ");
+  const verdict = d.price <= others[0].price ? "cheapest here" : `cheapest: ${esc(others[0].store)} ${usd(others[0].price)}`;
+  return `<p class="also">Also at ${names} — ${verdict}. <a href="#/compare">Compare</a></p>`;
+}
+
+export function dealCard(d, rank, all) {
   const s = scoreOf(d);
   return `<article class="card">
   <div class="card-head">${scoreRing(d)}<div class="card-head-text"><span class="rank">#${rank} · Deal Score ${s} — ${scoreWord(s)}</span>${signalBadge(d)}<span class="scorebar" role="img" aria-label="Deal Score ${s} of 100"><span style="width:${s}%"></span></span></div><span class="off">${percentOff(d)}% off</span></div>
@@ -30,17 +36,21 @@ export function dealCard(d, rank) {
   <p class="store">${esc(d.store)} · ${esc(d.category)}</p>
   <p class="prices"><strong>${usd(d.price)}</strong> <s>${usd(d.was)}</s> <span class="save">save ${usd(savings(d))}</span></p>
   <p class="evidence">${esc(d.evidence)}</p>
+  ${alsoAt(d, all)}
   <p class="meta">Checked ${checkedAt(d.checked)} · read in ${esc(d.source)}</p>
   <p class="actions"><a class="btn" href="${esc(d.url)}" rel="noopener" target="_blank">See it at ${esc(d.store)}</a>
   <a class="more" href="#/deal/${encodeURIComponent(d.id)}">Score breakdown</a></p>
 </article>`;
 }
 
-export function board(deals, state, cats, stores, stats) {
+export function board(deals, state, cats, stores, signals, stats) {
   const chip = (label, active, attr) =>
     `<button type="button" class="chip${active ? " chip-on" : ""}" data-${attr}="${esc(label)}">${esc(label)}</button>`;
-  return `<section class="stats" aria-label="Board summary">
-  <div class="stat"><strong>${stats.count}</strong><span>deals checked this evening</span></div>
+  const day = checkedDay(deals[0].checked);
+  return `<p class="fresh">Re-checked ${day} — every price below was read again this morning. Best Buy doorbusters end today; Walmart and Target run through Sunday; Amazon runs through Cyber Monday.</p>
+<section class="stats" aria-label="Board summary">
+  <div class="stat"><strong>${stats.count}</strong><span>deals re-checked today</span></div>
+  <div class="stat"><strong>${stats.newLows}</strong><span>new lows (lowest seen)</span></div>
   <div class="stat"><strong>${stats.stores}</strong><span>stores · ${stats.categories} categories</span></div>
   <div class="stat"><strong>${usd(Math.round(stats.totalSavings))}</strong><span>total savings vs usual prices</span></div>
   <div class="stat"><strong>${stats.topScore}</strong><span>highest Deal Score (of 100)</span></div>
@@ -53,6 +63,9 @@ export function board(deals, state, cats, stores, stats) {
     .join("")}</div>
   <div class="chiprow" role="group" aria-label="Store"><span class="chiplabel">Store</span>${["All", ...stores]
     .map((s) => chip(s, state.store === s, "store"))
+    .join("")}</div>
+  <div class="chiprow" role="group" aria-label="Verdict"><span class="chiplabel">Verdict</span>${["All", ...signals]
+    .map((s) => `<button type="button" class="chip${state.signal === s ? " chip-on" : ""}" data-signal="${esc(s)}">${s === "All" ? "All" : esc(signalLabel[s] ?? s)}</button>`)
     .join("")}</div>
   <div class="row2">
     <label>At least <select id="minoff">${[0, 25, 40, 50]
@@ -77,10 +90,10 @@ export function board(deals, state, cats, stores, stats) {
 <section id="grid" class="grid"></section>`;
 }
 
-export function gridHtml(shown) {
+export function gridHtml(shown, all) {
   if (shown.length === 0)
     return `<p class="empty">No deal matches those filters. <a href="#/">Clear the search</a> to see the whole board.</p>`;
-  return shown.map((d, i) => dealCard(d, i + 1)).join("");
+  return shown.map((d, i) => dealCard(d, i + 1, all)).join("");
 }
 
 export function dealPage(d, all) {
@@ -114,7 +127,7 @@ export function dealPage(d, all) {
     <dt>Good to know</dt><dd>${esc(d.note)}</dd>
   </dl>
   <p><a class="btn btn-big" href="${esc(d.url)}" rel="noopener" target="_blank">See it at ${esc(d.store)}</a></p>
-  <p class="meta">Prices move during Black Friday week — the store's page at checkout is the final word.</p>
+  <p class="meta">Prices move during Black Friday weekend — the store's page at checkout is the final word.</p>
 </article>
 ${compare}`;
 }
@@ -136,7 +149,7 @@ export function comparePage(all) {
     .join("");
   return `<p><a href="#/">&larr; Back to the radar</a></p>
 <h1>Same product, every store</h1>
-<p class="lede">These ${groups.length} products are sold by more than one store on tonight's board. Every price was checked on Black Friday evening, 27 November 2026 — the cheapest row of each table is marked, and ties are shown as ties.</p>
+<p class="lede">These ${groups.length} products are sold by more than one store on today's board. Every price was re-checked on Saturday 28 November 2026 — the cheapest row of each table is marked, and ties are shown as ties.</p>
 ${rows}`;
 }
 

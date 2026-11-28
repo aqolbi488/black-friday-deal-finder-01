@@ -1,9 +1,9 @@
-// Deal Score: one 0–100 number per deal, built only from facts on the card.
+// Deal Score: one 0–100 number per deal, built only from facts printed on the card.
 // Base = the discount percentage. The honest signal then adjusts it: a new low is worth
 // more than the same % off a price that returns every year, and an inflated was-price is
 // worth less. A small bonus for large dollar savings keeps big-ticket cuts visible.
-// The score is clamped to 0–100 and every input is printed next to it, so any reader
-// can recompute it by hand.
+// The score is clamped to 0–100 and every input sits next to it, so any reader can
+// recompute it by hand. Weekend re-check edition: same published formula, fresh prices.
 
 export const percentOff = (d) => Math.round((1 - d.price / d.was) * 100);
 

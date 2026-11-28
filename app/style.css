@@ -1,4 +1,5 @@
-/* Deal Radar — a night-scope board: deep navy, lime sweep, dense scored cards. */
+/* Deal Radar — a night-scope board: deep navy, lime sweep, dense scored cards.
+   Weekend re-check edition: tighter cards so more scored deals fit the first screen. */
 
 :root {
   --ink: #eef3e6;
@@ -20,7 +21,7 @@
 
 body {
   margin: 0 auto;
-  max-width: 1180px;
+  max-width: 1220px;
   padding: 0 16px 48px;
   background: radial-gradient(1200px 500px at 50% -120px, #1a2c50 0%, var(--paper) 60%);
   color: var(--ink);
@@ -43,7 +44,12 @@ body {
 .how { margin: 8px 0 0; color: var(--muted); font-size: 13.5px; max-width: 900px; }
 .how strong { color: var(--ink); }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.fresh {
+  background: #22331a; border: 1px solid var(--lime); border-radius: 10px;
+  padding: 8px 14px; margin: 0 0 10px; font-weight: 600;
+}
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 8px; margin-bottom: 10px; }
 .stat { background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
 .stat strong { display: block; font-size: 26px; color: var(--lime); line-height: 1.1; }
 .stat span { color: var(--muted); font-size: 13px; }
@@ -70,7 +76,7 @@ body {
 .compare-link { margin: 0; color: var(--muted); font-size: 14px; }
 .compare-link a { color: var(--accent); font-weight: 700; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: 10px;
   padding: 8px 12px; display: flex; flex-direction: column; gap: 3px;
@@ -96,7 +102,7 @@ body {
 .badge-routine { color: var(--warn); }
 .badge-inflated { color: var(--bad); background: #3a1d18; }
 
-.card h3 { margin: 2px 0; font-size: 18px; line-height: 1.25; }
+.card h3 { margin: 2px 0; font-size: 17px; line-height: 1.25; }
 .card h3 a { color: var(--ink); text-decoration: none; }
 .card h3 a:hover { text-decoration: underline; }
 .store { margin: 0; color: var(--accent); font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
@@ -106,6 +112,8 @@ body {
 .prices.big strong { font-size: 36px; }
 .save { color: var(--good); font-weight: 700; font-size: 14px; }
 .evidence { margin: 0; font-size: 14px; }
+.also { margin: 0; font-size: 13px; color: var(--muted); }
+.also a { color: var(--accent); font-weight: 700; }
 .meta { margin: 0; color: var(--muted); font-size: 12.5px; }
 .actions { margin-top: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 6px; }
 .btn {

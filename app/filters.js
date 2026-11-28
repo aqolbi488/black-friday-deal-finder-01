@@ -1,5 +1,6 @@
 // Filtering and sorting for the Radar board. Pure functions over the deal list —
 // no DOM here, so the board's behaviour can be reasoned about without a browser.
+// Weekend re-check edition adds a verdict (signal) filter beside category and store.
 
 import { percentOff, savings, scoreOf } from "./score.js";
 
@@ -11,12 +12,18 @@ export function storesOf(deals) {
   return [...new Set(deals.map((d) => d.store))].sort();
 }
 
-// state: { query, category, store, minOff, minScore, sort }
+export function signalsOf(deals) {
+  const order = ["new-low", "strong", "routine", "inflated"];
+  return order.filter((s) => deals.some((d) => d.signal === s));
+}
+
+// state: { query, category, store, signal, minOff, minScore, sort }
 export function applyFilters(deals, state) {
   const q = state.query.trim().toLowerCase();
   const shown = deals.filter((d) => {
     if (state.category !== "All" && d.category !== state.category) return false;
     if (state.store !== "All" && d.store !== state.store) return false;
+    if (state.signal !== "All" && d.signal !== state.signal) return false;
     if (percentOff(d) < state.minOff) return false;
     if (scoreOf(d) < state.minScore) return false;
     if (q !== "" && !`${d.title} ${d.store} ${d.category} ${d.product}`.toLowerCase().includes(q)) return false;
@@ -59,5 +66,6 @@ export function boardStats(deals) {
     topScore: Math.max(...scores),
     totalSavings: deals.reduce((sum, d) => sum + savings(d), 0),
     comparable: comparableProducts(deals).length,
+    newLows: deals.filter((d) => d.signal === "new-low").length,
   };
 }

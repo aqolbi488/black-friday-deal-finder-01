@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/black-friday-deal-finder-01/aqolbi488/black-friday-deal-finder-01/rank.svg)](https://make.fun/bounty/black-friday-deal-finder-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
 [![reward](https://make.fun/badge/black-friday-deal-finder-01/aqolbi488/black-friday-deal-finder-01/reward.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
 
-Deal Radar: a Black Friday deal finder that scores every deal 0–100 (discount % + honest verdict bonus + dollars saved) and puts the strongest first — prices checked on Black Friday evening, 27 November 2026, each with a verdict (new low, strong price, routine sale, inflated was-price), search and filters by category, store, discount and score, and the same product compared across stores in a dedicated table view. Static site under app/ (no build step, no network loads); main.ts hands it in with the vendored make.fun dossier library.
+Deal Radar (weekend re-check edition): a Black Friday deal finder that scores every deal 0–100 (discount % + honest verdict bonus + dollars saved) and puts the strongest first — 74 prices re-checked on Saturday 28 November 2026 across 10 stores, each with a verdict (new low, strong price, routine sale, inflated was-price), search and filters by category, store, verdict, discount and score, and 14 products compared across stores in a dedicated table view. Static site under app/ (no build step, no network loads); main.ts hands it in with the vendored make.fun dossier library.
 
 ## Run it
 
